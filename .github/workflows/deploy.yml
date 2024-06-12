@@ -1,4 +1,4 @@
-name: dev-server
+name: dev-Server
 
 on:
   push:
@@ -6,7 +6,6 @@ on:
       - dev
     tags:
       - v*
-
   pull_request:
 
 env:
@@ -22,7 +21,6 @@ jobs:
     defaults:
       run:
         shell: bash
-
     steps:
       - uses: actions/checkout@v2
 
@@ -36,7 +34,7 @@ jobs:
         run: |
           IMAGE_ID=ghcr.io/${{ github.repository }}/$IMAGE_NAME
           IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
-          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/,,')
+          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
           [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
           [ "$VERSION" == "dev" ] && VERSION=latest
           echo IMAGE_ID=$IMAGE_ID
@@ -48,7 +46,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: executing remote ssh commands using ssh key
+      - name: Executing remote SSH commands using SSH key
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.DEV_SERVER_URL }}
