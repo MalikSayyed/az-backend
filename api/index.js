@@ -8,7 +8,8 @@ const customerRoutes = require("../routes/customer");
 const itemRoutes = require("../routes/item");
 const invoiceRoutes = require("../routes/invoice");
 require("dotenv").config();
-
+const fs = require('fs');
+const path = '/home/ubuntu/global-bundle.pem';
 const app = express();
 
 app.use(
@@ -27,6 +28,13 @@ app.use(
 // Middleware
 app.use(bodyParser.json());
 console.log("Mongo URI inside express",process.env.MONGO_URI);
+fs.access(path, fs.constants.R_OK, (err) => {
+  if (err) {
+      console.error(`File not accessible: ${path}`, err);
+  } else {
+      console.log('File is accessible');
+  }
+});
 // Connect to MongoDB
 mongoose
   .connect(process.env.MONGO_URI)
