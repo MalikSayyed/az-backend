@@ -27,7 +27,7 @@ app.use(
 
 // Middleware
 app.use(bodyParser.json());
-console.log("Mongo URI inside express",process.env.MONGO_URI);
+console.log("Mongo URI inside express a",process.env.MONGO_URI);
 fs.access(path, fs.constants.R_OK, (err) => {
   if (err) {
       console.error(`File not accessible: ${path}`, err);
