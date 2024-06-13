@@ -26,7 +26,7 @@ app.use(
 
 // Middleware
 app.use(bodyParser.json());
-
+console.log("Mongo URI inside express",process.env.MONGO_URI);
 // Connect to MongoDB
 mongoose
   .connect(process.env.MONGO_URI)
