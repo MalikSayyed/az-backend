@@ -54,4 +54,3 @@ jobs:
           username: ubuntu
           key: ${{ secrets.DEV_SSH_KEY }}
           script: sh deploy-backend.sh
-
