@@ -1,17 +1,17 @@
-version: '3'
+version: '3.8'
 
 services:
   server:
-    image: ghcr.io/maliksayyed/az-backend/prod-server
+    image: ghcr.io/maliksayyed/az-backend/dev-server
     container_name: server
     restart: always
     env_file:
       - .env
     ports:
-      - "3000:3000"
+      - '3000:3000'
     networks:
-      - aws
+      - decision
 
 networks:
-  aws:
+  decision:
     external: true
