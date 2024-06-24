@@ -49,7 +49,7 @@ app.use("/item", itemRoutes);
 app.use("/invoice", invoiceRoutes);
 
 app.get("/", (req, res) => {
-  res.send("Working");
+  res.send("Working fine");
 });
 
 // Start server
