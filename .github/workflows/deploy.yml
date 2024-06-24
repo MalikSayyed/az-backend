@@ -1,4 +1,4 @@
-name: dev-Server
+name: dev-erver
 
 on:
   push:
@@ -18,39 +18,32 @@ jobs:
     permissions:
       contents: read
       packages: write
-    defaults:
-      run:
-        shell: bash
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-      - name: Build image
-        run: docker build . --file Dockerfile --tag $IMAGE_NAME
+      - name: Build Docker image
+        run: docker build . --file Dockerfile --tag ghcr.io/${{ github.repository }}/$IMAGE_NAME
 
-      - name: Log into registry
+      - name: Log into GitHub Container Registry
         run: echo "${{ secrets.TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-      - name: Push image
+      - name: Push Docker image to GHCR
         run: |
-          IMAGE_ID=ghcr.io/${{ github.repository }}/$IMAGE_NAME
-          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
-          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
-          [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
-          [ "$VERSION" == "dev" ] && VERSION=latest
-          echo IMAGE_ID=$IMAGE_ID
-          echo VERSION=$VERSION
-          docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
-          docker push $IMAGE_ID:$VERSION
+          VERSION=$(echo "${{ github.ref }}" | sed -e 's,refs/tags/,,')
+          docker tag ghcr.io/${{ github.repository }}/$IMAGE_NAME:latest ghcr.io/${{ github.repository }}/$IMAGE_NAME:$VERSION
+          docker push ghcr.io/${{ github.repository }}/$IMAGE_NAME:$VERSION
+          docker push ghcr.io/${{ github.repository }}/$IMAGE_NAME:latest
 
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    
     steps:
-      - name: Executing remote SSH commands using SSH key
+      - name: Execute remote SSH commands using SSH key
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.DEV_SERVER_URL }}
           username: ubuntu
           key: ${{ secrets.DEV_SSH_KEY }}
-          script: sh deploy-backend.sh
+          script: |
+            sh deploy-backend.sh
