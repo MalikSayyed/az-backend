@@ -1,4 +1,4 @@
-name: dev-erver
+name: dev-server
 
 on:
   push:
@@ -17,33 +17,36 @@ jobs:
     if: github.event_name == 'push'
     permissions:
       contents: read
-      packages: write
+packages: write
+    defaults:
+      run:
+        shell: bash
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Build Docker image
-        run: docker build . --file Dockerfile --tag ghcr.io/${{ github.repository }}/$IMAGE_NAME
-
-      - name: Log into GitHub Container Registry
+      - uses: actions/checkout@v2
+      - name: Build image
+        run: docker build . --file Dockerfile --tag $IMAGE_NAME
+      - name: Log into registry
         run: echo "${{ secrets.TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-
-      - name: Push Docker image to GHCR
+      - name: Push image
         run: |
-          VERSION=$(echo "${{ github.ref }}" | sed -e 's,refs/tags/,,')
-          docker tag ghcr.io/${{ github.repository }}/$IMAGE_NAME:latest ghcr.io/${{ github.repository }}/$IMAGE_NAME:$VERSION
-          docker push ghcr.io/${{ github.repository }}/$IMAGE_NAME:$VERSION
-          docker push ghcr.io/${{ github.repository }}/$IMAGE_NAME:latest
+          IMAGE_ID=ghcr.io/${{ github.repository }}/$IMAGE_NAME
+          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
+          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
+          [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
+          [ "$VERSION" == "master" ] && VERSION=latest
+          echo IMAGE_ID=$IMAGE_ID
+          echo VERSION=$VERSION
+          docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
+          docker push $IMAGE_ID:$VERSION
 
   deploy:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Execute remote SSH commands using SSH key
+      - name: executing remote ssh commands using ssh key
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.DEV_SERVER_URL }}
           username: ubuntu
           key: ${{ secrets.DEV_SSH_KEY }}
-          script: |
-            sh deploy-backend.sh
+          script: sh deploy-backend.sh
